@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novembro Negro - Pop Quiz & Ranking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #060608;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .insta-story {
+            width: 100%;
+            max-width: 412px;
+            height: 92vh;
+            background: #0f0f12;
+            border: 1px solid #1f1f25;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 24px 20px;
+            justify-content: space-between;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .top-bar {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #1c1c22;
+        }
+
+        .profile-pic {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+            padding: 2px;
+        }
+
+        .profile-pic-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0f0f12;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .user-info span {
+            font-size: 10px;
+            color: #8e8e93;
+        }
+
+        .story-timeline {
+            display: flex;
+            gap: 3px;
+            padding: 12px 16px 0;
+        }
+
+        .story-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .story-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: #fff;
+            transition: width 0.3s ease;
+        }
+
+        .story-bar.completed .story-bar-fill,
+        .story-bar.active .story-bar-fill {
+            width: 100%;
+            background: #00ff87;
+        }
+
+        .start-content {
+            text-align: center;
+            margin: auto 0;
+        }
+
+        .logo-neon {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #00ff87, #60efff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .insta-input {
+            width: 100%;
+            background: #1a1a23;
+            border: 1px solid #2d2d3d;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            padding: 16px;
+            margin-top: 25px;
+            text-align: center;
+            outline: none;
+        }
+
+        .insta-input:focus {
+            border-color: #00ff87;
+            box-shadow: 0 0 15px rgba(0,255,135,0.2);
+        }
+
+        .btn-prime {
+            width: 100%;
+            margin-top: 15px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .level-tag {
+            align-self: center;
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .level-tag.fácil {
+            color: #00ff87;
+            border-color: rgba(0,255,135,0.3);
+            background: rgba(0,255,135,0.08);
+        }
+
+        .level-tag.médio {
+            color: #ffaa00;
+            border-color: rgba(255,170,0,0.3);
+            background: rgba(255,170,0,0.08);
+        }
+
+        .level-tag.difícil {
+            color: #ff3b30;
+            border-color: rgba(255,59,48,0.3);
+            background: rgba(255,59,48,0.08);
+        }
+
+        .level-tag.expert {
+            color: #ff7bff;
+            border-color: rgba(255,123,255,0.3);
+            background: rgba(255,123,255,0.08);
+        }
+
+        .image-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #2d2d3d;
+            background: #16161f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+            font-size: 45px;
+            filter: brightness(0.15) grayscale(1);
+            transition: all 0.4s ease;
+        }
+
+        .image-box.revealed {
+            filter: brightness(1) grayscale(0);
+            border-color: #00ff87;
+            box-shadow: 0 0 25px rgba(0,255,135,0.3);
+        }
+
+        .question {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.4;
+            text-align: center;
+            color: #f5f5f7;
+            margin: 10px 0;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-option {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: #f5f5f7;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s ease;
+        }
+
+        .correct {
+            background: #00ff87 !important;
+            border-color: #00ff87 !important;
+            color: #000 !important;
+            font-weight: 700;
+        }
+
+        .wrong {
+            background: #ff3b30 !important;
+            border-color: #ff3b30 !important;
+            opacity: 0.4;
+        }
+
+        .feedback-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 12px;
+            margin-top: 10px;
+            min-height: 70px;
+            opacity: 0;
+            transition: 0.3s ease;
+        }
+
+        .feedback-card.show {
+            opacity: 1;
+        }
+
+        .rank-list {
+            width: 100%;
+            background: #14141a;
+            border: 1px solid #22222b;
+            border-radius: 14px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #22222b;
+            font-size: 14px;
+        }
+
+        .rank-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank-name {
+            font-weight: 600;
+            color: #60efff;
+        }
+
+        .rank-score {
+            font-weight: 700;
+            color: #00ff87;
+        }
+    </style>
+</head>
+<body>
+    <div class="insta-story">
+        <div class="screen active" id="screen-login">
+            <div class="top-bar">
+                <div class="profile-pic"><div class="profile-pic-inner"></div></div>
+
+                <div class="user-info">
+                    <p>@exposicao.culturanegra-9ano</p>
+                    <span>Novembro Negro 2026</span>
+                </div>
+            </div>
+
+            <div class="start-content">
+                <h1 class="logo-neon">Afro Ícones Quiz</h1>
+                <p style="color: #a8a8b3; font-size: 14px;">Descubra se você realmente domina a história e a cultura negra pop e histórica.</p>
+                <input type="text" id="username" class="insta-input" maxlength="15" placeholder="Digite seu @ do Insta ou Nome..." />
+                <button class="btn-prime" onclick="startGame()">Entrar no Jogo ⚡</button>
+            </div>
+
+            <div></div>
+        </div>
+
+        <div class="screen" id="screen-game" style="padding-top: 5px;">
+            <div class="story-timeline" id="timeline"></div>
+
+            <div class="top-bar" style="border: none;">
+                <div class="profile-area" style="display:flex; align-items:center; gap:10px;">
+                    <div class="profile-pic"><div class="profile-pic-inner"></div></div>
+                    <div class="user-info">
+                        <p id="player-tag">@player</p>
+                        <span>Fases do Story</span>
+                    </div>
+                </div>
+            </div>
+
+            <span class="level-tag" id="quiz-level">NÍVEL</span>
+            <div class="image-box" id="quiz-avatar">👤</div>
+            <p class="question" id="quiz-question">Carregando pergunta...</p>
+            <div class="options" id="quiz-options"></div>
+
+            <div class="feedback-card" id="quiz-feedback">
+                <h4 id="feed-title" style="font-size: 13px; margin-bottom: 2px;">Fato Histórico</h4>
+                <p id="feed-desc" style="font-size: 11.5px; color: #c1c1cb; line-height: 1.3;"></p>
+            </div>
+        </div>
+
+        <div class="screen" id="screen-end">
+            <div class="top-bar">
+                <div class="profile-pic"><div class="profile-pic-inner"></div></div>
+                <div class="user-info">
+                    <p>@exposicao.culturanegra-9ano</p>
+                    <span>Leaderboard Final 🏆</span>
+                </div>
+            </div>
+
+            <div style="text-align:center; overflow-y:auto; flex:1; padding-top:10px;">
+                <h2 style="font-size: 20px; font-weight: 800;">Fim do Feed! 🏁</h2>
+                <p id="final-score-txt" style="font-size:15px; color:#00ff87; margin:5px 0; font-weight:700;">Você acertou 0/0</p>
+
+                <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:1px; margin-top:20px; text-align:left; color:#8e8e93;">🏆 TOP 5 DA EXPOSIÇÃO</h3>
+                <div class="rank-list" id="leaderboard"></div>
+
+                <button class="btn-prime" onclick="restartGame()">Jogar de Novo 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { level: 'fácil', icon: '⚽', question: 'Dono da Europa, cria de São Gonçalo e símbolo global mais potente na luta antirracista do futebol mundial. Quem é o ícone?', options: ['Neymar Jr.', 'Vini Jr.', 'Rodrygo Góes', 'Mbappé'], correct: 1, fact: 'Vini Jr. transformou os gramados europeus em palco de resistência contra o racismo estrutural.' },
+            { level: 'médio', icon: '🎤', question: 'Quem foi a primeira artista preta e brasileira a alcançar o topo global do Spotify e comandar o maior show de pop/funk no Rock in Rio?', options: ['Iza', 'Ludmilla', 'Anitta', 'Elza Soares'], correct: 1, fact: 'Ludmilla quebrou barreiras históricas no mercado pop saindo do funk fluminense para os maiores palcos do mundo.' },
+            { level: 'difícil', icon: '✍️', question: 'Grandiosa escritora brasileira contemporânea que criou o conceito de “Escrevivência”, retratando a vida das mulheres negras.', options: ['Clarice Lispector', 'Carolina Maria de Jesus', 'Conceição Evaristo', 'Djamila Ribeiro'], correct: 2, fact: 'Conceição Evaristo é uma das mentes mais brilhantes da nossa literatura, traduzida internacionalmente.' },
+            { level: 'difícil', icon: '📚', question: 'Qual escritora brasileira é considerada a mãe do movimento literário negro no Brasil?', options: ['Machado de Assis', 'Zélia Gattai', 'Rachel de Queiroz', 'Djamila Ribeiro'], correct: 1, fact: 'Zélia Gattai é uma das principais vozes do movimento literário negro no Brasil, conhecida por sua obra que aborda a experiência negra.' },
+            { level: 'expert', icon: '🎬', question: 'Diretor negro brasileiro que conquistou o mundo com o filme “Cidade de Deus” e é referência no cinema mundial.', options: ['José Padilha', 'Fernando Meirelles', 'Kátia Lund', 'Walter Salles'], correct: 1, fact: 'Fernando Meirelles revolucionou o cinema brasileiro e internacional com sua visão única e inovadora.' },
+            { level: 'expert', icon: '🚀', question: 'Qual cientista negra brasileira ganhou destaque internacional liderando o sequenciamento do genoma do coronavírus em tempo recorde?', options: ['Sônia Guimarães', 'Jaqueline Goes de Jesus', 'Katia Bogéa', 'Joana D’Arc Félix'], correct: 1, fact: 'A biomédica Jaqueline Goes mapeou o vírus em apenas 48 horas, sendo referência mundial na ciência.' },
+            { level: 'fácil', icon: '🎨', question: 'Artista plástico americano de origem africana que virou ícone da arte urbana e da crítica ao racismo.', options: ['Andy Warhol', 'Jean-Michel Basquiat', 'Keith Haring', 'Banksy'], correct: 1, fact: 'Basquiat transformou o grafite em linguagem de resistência e arte de alta cultura.' },
+            { level: 'médio', icon: '🎶', question: 'Qual cantora negra americana é conhecida como a “Rainha do Soul” e teve um impacto profundo na música e na luta pelos direitos civis?', options: ['Aretha Franklin', 'Whitney Houston', 'Beyoncé', 'Tina Turner'], correct: 0, fact: 'Aretha Franklin não apenas revolucionou a música, mas também se tornou um símbolo da luta pelos direitos civis nos Estados Unidos.' },
+            { level: 'difícil', icon: '🏀', question: 'Qual jogador negro americano é considerado um dos maiores da história do basquete e também um ativista pelos direitos civis?', options: ['Michael Jordan', 'LeBron James', 'Kobe Bryant', 'Bill Russell'], correct: 3, fact: 'Bill Russell foi um dos primeiros atletas a usar sua plataforma para lutar contra o racismo e a desigualdade social.' },
+            { level: 'expert', icon: '🔬', question: 'Qual cientista negra brasileira é conhecida por seu trabalho pioneiro em biologia molecular e genética?', options: ['Sônia Guimarães', 'Jaqueline Goes de Jesus', 'Katia Bogéa', 'Joana D’Arc Félix'], correct: 2, fact: 'Katia Bogéa é uma das principais pesquisadoras brasileiras em genética, contribuindo significativamente para o entendimento das doenças hereditárias.' },
+            { level: 'expert', icon: '🎨', question: 'Qual artista plástico brasileiro é conhecido por suas obras que abordam a experiência negra?', options: ['Vitoria Ribeiro', 'Cícero Dias', 'Adriano de Souza', 'Lídia de Oliveira'], correct: 1, fact: 'Cícero Dias é um dos principais artistas plásticos brasileiros, reconhecido por suas obras que abordam a experiência negra.' },
+            { level: 'médio', icon: '🎭', question: 'Qual atriz negra brasileira ganhou destaque internacional por seu papel em filmes e séries de renome?', options: ['Taís Araújo', 'Camila Pitanga', 'Lázaro Ramos', 'Sheron Menezzes'], correct: 0, fact: 'Taís Araújo é uma das atrizes mais respeitadas do Brasil, conhecida por seu talento e por quebrar barreiras na televisão e no cinema.' },
+            { level: 'difícil', icon: '🎤', question: 'Qual cantora negra brasileira é conhecida por sua voz potente e por abordar questões sociais em suas músicas?', options: ['Elza Soares', 'Ludmilla', 'Iza', 'Karol Conká'], correct: 0, fact: 'Elza Soares é uma das maiores cantoras do Brasil, reconhecida por sua voz única e por seu engajamento em causas sociais.' },
+            { level: 'fácil', icon: '⚡', question: 'Qual jogador negro brasileiro é conhecido por sua velocidade e habilidade no futebol, sendo um dos maiores ícones do esporte?', options: ['Pelé', 'Ronaldo Fenômeno', 'Neymar Jr.', 'Vini Jr.'], correct: 0, fact: 'Pelé. é um dos jogadores mais talentosos do futebol mundial, conhecido por sua habilidade e popularmente chamado de Rei do Futebol.' },
+            { level: 'difícil', icon: '💡', question: 'Qual inventor negro americano é conhecido por suas invenções que revolucionaram a comunicação?', options: ['Benjamin Franklin', 'George Washington Carver', 'Dr. Percy Julian', 'Granville T. Woods'], correct: 3, fact: 'Granville T. Woods foi um dos mais importantes inventores negros dos Estados Unidos, conhecido por suas invenções que revolucionaram a comunicação.' }
+        ];
+
+        const leaderboard = [
+            { name: 'Kauê', score: 5 },
+            { name: 'Júlia', score: 4 },
+            { name: 'Luan', score: 4 },
+            { name: 'Nina', score: 3 },
+            { name: 'Davi', score: 3 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+        let playerName = 'visitante';
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.toggle('active', screen.id === screenId);
+            });
+        }
+
+        function buildTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+
+            questions.forEach((_, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'story-bar';
+
+                if (index < currentQuestionIndex) {
+                    bar.classList.add('completed');
+                }
+
+                if (index === currentQuestionIndex) {
+                    bar.classList.add('active');
+                }
+
+                const fill = document.createElement('div');
+                fill.className = 'story-bar-fill';
+                bar.appendChild(fill);
+                timeline.appendChild(bar);
+            });
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            const list = [...leaderboard].sort((a, b) => b.score - a.score).slice(0, 5);
+            container.innerHTML = '';
+
+            list.forEach((entry, index) => {
+                const row = document.createElement('div');
+                row.className = 'rank-item';
+                const name = document.createElement('span');
+                name.className = 'rank-name';
+                name.textContent = `#${index + 1} ${entry.name}`;
+
+                const points = document.createElement('span');
+                points.className = 'rank-score';
+                points.textContent = `${entry.score} pts`;
+
+                row.append(name, points);
+                container.appendChild(row);
+            });
+        }
+
+        function startGame() {
+            const usernameInput = document.getElementById('username');
+            playerName = usernameInput.value.trim().replace(/^@+/, '').slice(0, 15) || 'visitante';
+            document.getElementById('player-tag').textContent = `@${playerName}`;
+            currentQuestionIndex = 0;
+            score = 0;
+            isAnswered = false;
+            renderQuestion();
+            switchScreen('screen-game');
+        }
+
+        function renderQuestion() {
+            const current = questions[currentQuestionIndex];
+            const levelTag = document.getElementById('quiz-level');
+            const avatar = document.getElementById('quiz-avatar');
+            const questionEl = document.getElementById('quiz-question');
+            const optionsEl = document.getElementById('quiz-options');
+            const feedback = document.getElementById('quiz-feedback');
+            const feedTitle = document.getElementById('feed-title');
+            const feedDesc = document.getElementById('feed-desc');
+
+            levelTag.textContent = `NÍVEL ${current.level.toUpperCase()}`;
+            levelTag.className = `level-tag ${current.level}`;
+            avatar.textContent = current.icon;
+            avatar.classList.remove('revealed');
+            questionEl.textContent = current.question;
+            optionsEl.innerHTML = '';
+
+            current.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'btn-option';
+                button.textContent = option;
+                button.addEventListener('click', () => handleAnswer(index));
+                optionsEl.appendChild(button);
+            });
+
+            feedback.classList.remove('show');
+            feedTitle.textContent = 'Fato Histórico';
+            feedDesc.textContent = '';
+            buildTimeline();
+        }
+
+        function setFeedback(title, description, isCorrect) {
+            const feedback = document.getElementById('quiz-feedback');
+            const feedTitle = document.getElementById('feed-title');
+            const feedDesc = document.getElementById('feed-desc');
+            feedTitle.textContent = title;
+            feedDesc.textContent = description;
+            feedTitle.style.color = isCorrect ? '#00ff87' : '#ffb4a9';
+            feedback.classList.add('show');
+        }
+
+        function handleAnswer(selectedIndex) {
+            if (isAnswered) return;
+
+            const current = questions[currentQuestionIndex];
+            const buttons = Array.from(document.querySelectorAll('.btn-option'));
+            const avatar = document.getElementById('quiz-avatar');
+
+            isAnswered = true;
+            buttons.forEach((button, index) => {
+                button.disabled = true;
+                if (index === current.correct) {
+                    button.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    button.classList.add('wrong');
+                }
+            });
+
+            avatar.classList.add('revealed');
+
+            if (selectedIndex === current.correct) {
+                score += 1;
+                setFeedback('Acertou!', `${current.fact} Resposta correta: ${current.options[current.correct]}.`, true);
+            } else {
+                setFeedback('Quase lá!', `${current.fact} A resposta correta era: ${current.options[current.correct]}.`, false);
+            }
+
+            setTimeout(() => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex += 1;
+                    isAnswered = false;
+                    renderQuestion();
+                    return;
+                }
+
+                showEndScreen();
+            }, 1800);
+        }
+
+        function showEndScreen() {
+            const finalScoreText = document.getElementById('final-score-txt');
+            finalScoreText.textContent = `Você acertou ${score}/${questions.length}`;
+
+            const playerScore = { name: playerName, score };
+            const ranking = [...leaderboard, playerScore].sort((a, b) => b.score - a.score).slice(0, 5);
+
+            const list = document.getElementById('leaderboard');
+            list.innerHTML = '';
+            ranking.forEach((entry, index) => {
+                const row = document.createElement('div');
+                row.className = 'rank-item';
+                const name = document.createElement('span');
+                name.className = 'rank-name';
+                name.textContent = `#${index + 1} ${entry.name}`;
+
+                const points = document.createElement('span');
+                points.className = 'rank-score';
+                points.textContent = `${entry.score} pts`;
+
+                row.append(name, points);
+                list.appendChild(row);
+            });
+
+            switchScreen('screen-end');
+        }
+
+        function restartGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            isAnswered = false;
+            document.getElementById('username').value = '';
+            switchScreen('screen-login');
+        }
+
+        document.getElementById('username').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                startGame();
+            }
+        });
+
+        renderLeaderboard();
+    </script>
+</body>
+</html>
